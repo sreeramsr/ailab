@@ -1,0 +1,705 @@
+% Main entry point for finding the N-Queen solution
+n_queens(N, Solution) :-
+    length(Solution, N), % Create a list of length N for the solution
+    valid_queen_positions(N, Solution), % Ensure all positions in the solution are valid
+    use_module(library(clpfd)),
+    all_distinct(Solution), % Ensure no two queens share the same column
+    no_attack(Solution), % Ensure no two queens attack each other diagonally
+    write(Solution), nl.
+
+% Check if all queens are placed in valid positions
+valid_queen_positions(_, []).
+valid_queen_positions(N, [Row|Rest]) :-
+    valid_queen_positions(N, Rest),
+    between(1, N, Row).
+
+% Ensure that no two queens attack each other on diagonals
+no_attack([]).
+no_attack([Row|Rows]) :-
+    safe(Row, 1, Rows),
+    no_attack(Rows).
+
+% Check if a queen in a specific row and column does not attack other queens
+safe(_, _, []).
+safe(Row, Col, [OtherRow|Rest]) :-
+    Row =\= OtherRow,
+    abs(Row - OtherRow) =\= Col,
+    NextCol is Col + 1,
+    safe(Row, NextCol, Rest).
+
+% Entry point for executing the program
+solve_n_queens(N) :-
+    n_queens(N, Solution),
+    write('Solution: '), write(Solution), nl.
+
+
+
+
+
+
+
+
+
+
+% Define edges in the graph
+edge(a, b).
+edge(a, c).
+edge(b, d).
+edge(b, e).
+edge(c, f).
+edge(c, g).
+edge(d, h).
+edge(e, i).
+edge(f, j).
+edge(g, k).
+edge(i, l).
+edge(j, m).
+edge(k, n).
+edge(l, o).
+
+% DFS entry point
+dfs(Start, Goal) :-
+    dfs_util(Start, Goal, [Start], Path),
+    write('Path: '), write(Path), nl.
+
+% DFS utility with visited list
+dfs_util(Goal, Goal, Visited, Path) :-
+    reverse(Visited, Path).
+
+dfs_util(Current, Goal, Visited, Path) :-
+    edge(Current, Next),
+    \+ member(Next, Visited),
+    dfs_util(Next, Goal, [Next|Visited], Path).
+
+
+
+
+
+
+
+
+
+
+
+% Edge distances between a few Indian cities (symmetric matrix)
+distance(delhi, mumbai, 1400).
+distance(mumbai, delhi, 1400).
+distance(delhi, bangalore, 2000).
+distance(bangalore, delhi, 2000).
+distance(mumbai, bangalore, 1000).
+distance(bangalore, mumbai, 1000).
+distance(chennai, bangalore, 350).
+distance(bangalore, chennai, 350).
+distance(mumbai, chennai, 1500).
+distance(chennai, mumbai, 1500).
+distance(delhi, chennai, 2200).
+distance(chennai, delhi, 2200).
+
+% Define permutation to find all possible paths
+permutation([], []).
+permutation(List, [H|Perm]) :-
+    select(H, List, Rest),
+    permutation(Rest, Perm).
+
+% Calculate the total distance of the given path
+calculate_distance([_], 0).
+calculate_distance([City1, City2 | Rest], Distance) :-
+    distance(City1, City2, D),
+    calculate_distance([City2 | Rest], RestDistance),
+    Distance is D + RestDistance.
+
+% TSP predicate to find paths and distances
+tsp([Start|Cities], Path, Distance) :-
+    permutation(Cities, Perm),
+    append(Perm, [Start], FullPath),
+    calculate_distance([Start | FullPath], Distance),
+    Path = [Start | FullPath].
+
+% Find the shortest path
+find_shortest_path(Cities, ShortestPath, MinDistance) :-
+    findall([Path, Distance], tsp(Cities, Path, Distance), Paths),
+    sort(2, @=<, Paths, [[ShortestPath, MinDistance] | _]).
+
+
+
+
+
+
+
+
+
+
+
+
+% Declare predicates as dynamic
+:- dynamic book/3.
+:- dynamic user/1.
+:- dynamic available/2.
+:- dynamic borrowed/2.
+
+% --- Book Facts ---
+book('The Great Gatsby', 'F. Scott Fitzgerald', '9780743273565').
+book('1984', 'George Orwell', '9780451524935').
+book('To Kill a Mockingbird', 'Harper Lee', '9780061120084').
+book('Pride and Prejudice', 'Jane Austen', '9780141439518').
+
+% --- User Facts ---
+user('Alice').
+user('Bob').
+user('Charlie').
+
+% --- Book Availability ---
+available('The Great Gatsby', true).
+available('1984', true).
+available('To Kill a Mockingbird', true).
+available('Pride and Prejudice', true).
+
+% --- Borrowed Books ---
+borrowed('Alice', '1984').
+borrowed('Bob', 'To Kill a Mockingbird').
+
+% Add a new book
+add_book(Title, Author, ISBN) :-
+    \+ book(Title, Author, ISBN),
+    assertz(book(Title, Author, ISBN)),
+    assertz(available(Title, true)).
+
+% Search for a book by title
+search_book(Title) :-
+    book(Title, Author, ISBN),
+    format('Found book: ~w by ~w (ISBN: ~w)~n', [Title, Author, ISBN]).
+
+% Borrow a book
+borrow_book(User, Title) :-
+    available(Title, true),
+    user(User),
+    \+ borrowed(User, Title),
+    retract(available(Title, true)),
+    assertz(available(Title, false)),
+    assertz(borrowed(User, Title)),
+    format('~w has borrowed the book: ~w~n', [User, Title]).
+borrow_book(_, Title) :-
+    available(Title, false),
+    format('The book ~w is already borrowed or unavailable!~n', [Title]).
+
+% Return a borrowed book
+return_book(User, Title) :-
+    borrowed(User, Title),
+    retract(borrowed(User, Title)),
+    assertz(available(Title, true)),
+    format('~w has returned the book: ~w~n', [User, Title]).
+return_book(User, Title) :-
+    \+ borrowed(User, Title),
+    format('~w did not borrow the book: ~w~n', [User, Title]).
+
+% List available books
+list_available_books :-
+    book(Title, Author, ISBN),
+    available(Title, true),
+    format('Available book: ~w by ~w (ISBN: ~w)~n', [Title, Author, ISBN]),
+    fail.
+list_available_books.
+
+% List borrowed books
+list_borrowed_books :-
+    borrowed(User, Title),
+    format('~w has borrowed: ~w~n', [User, Title]),
+    fail.
+list_borrowed_books.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Goal state
+goal([1,2,3,4,5,6,7,8,0]).
+
+% Swaps two elements in a list by position
+swap(List, I, J, Result) :-
+    nth0(I, List, ElemI),
+    nth0(J, List, ElemJ),
+    set_elem(List, I, ElemJ, Temp),
+    set_elem(Temp, J, ElemI, Result).
+
+% Replace element at position N in List with Elem → NewList
+set_elem([_|T], 0, Elem, [Elem|T]).
+set_elem([H|T], N, Elem, [H|R]) :-
+    N > 0,
+    N1 is N - 1,
+    set_elem(T, N1, Elem, R).
+
+% Legal moves of 0 (blank tile)
+move(State, Next) :-
+    nth0(Blank, State, 0),
+    (
+        (Blank > 2, Up is Blank - 3, swap(State, Blank, Up, Next));    % up
+        (Blank < 6, Down is Blank + 3, swap(State, Blank, Down, Next));% down
+        (Blank mod 3 =\= 0, Left is Blank - 1, swap(State, Blank, Left, Next));  % left
+        (Blank mod 3 =\= 2, Right is Blank + 1, swap(State, Blank, Right, Next)) % right
+    ).
+
+% BFS algorithm
+bfs([[State|Path]|_], [State|Path]) :-
+    goal(State).
+bfs([[State|Path]|Rest], Solution) :-
+    findall([Next,State|Path],
+            (move(State, Next), \+ member(Next, [State|Path])),
+            Moves),
+    append(Rest, Moves, NewQueue),
+    bfs(NewQueue, Solution).
+
+% Start the solver
+solve(Start) :-
+    bfs([[Start]], Solution),
+    reverse(Solution, Steps),
+    print_steps(Steps).
+
+% Pretty print puzzle states in order
+print_steps([]).
+print_steps([H|T]) :-
+    print_board(H),
+    nl,
+    print_steps(T).
+
+print_board([A,B,C,D,E,F,G,H,I]) :-
+    format('~w ~w ~w~n~w ~w ~w~n~w ~w ~w~n', [A,B,C,D,E,F,G,H,I]).
+
+
+
+
+
+
+
+
+
+
+
+
+% fill(X,Y) starts solving from initial Jug1=X, Jug2=Y with goal (4,0)
+fill(X, Y) :-
+    solve((X,Y), [], (4,0)).
+
+% Base case: reached goal state
+solve(State, _, State) :-
+    write('Goal State is reached: '), write(State), nl, !.
+
+% Recursive case: try all actions, avoid revisiting states
+solve((X,Y), Visited, Goal) :-
+    \+ member((X,Y), Visited),
+    (
+        fill_jug1((X,Y), NewState);
+        fill_jug2((X,Y), NewState);
+        empty_jug1((X,Y), NewState);
+        empty_jug2((X,Y), NewState);
+        pour_jug1_to_jug2((X,Y), NewState);
+        pour_jug2_to_jug1((X,Y), NewState)
+    ),
+    write('Action leads to state: '), write(NewState), nl,
+    solve(NewState, [(X,Y)|Visited], Goal).
+
+% Max capacities
+max_jug1(3).
+max_jug2(4).
+
+% Action: Fill Jug 1 to max (3 gallons)
+fill_jug1((X,Y), (NewX,Y)) :-
+    max_jug1(Max1),
+    X < Max1,
+    NewX = Max1,
+    write('Fill the 3-Gallon Jug (Jug 1).'), nl.
+
+% Action: Fill Jug 2 to max (4 gallons)
+fill_jug2((X,Y), (X,NewY)) :-
+    max_jug2(Max2),
+    Y < Max2,
+    NewY = Max2,
+    write('Fill the 4-Gallon Jug (Jug 2).'), nl.
+
+% Action: Empty Jug 1
+empty_jug1((X,Y), (0,Y)) :-
+    X > 0,
+    write('Empty the 3-Gallon Jug (Jug 1).'), nl.
+
+% Action: Empty Jug 2
+empty_jug2((X,Y), (X,0)) :-
+    Y > 0,
+    write('Empty the 4-Gallon Jug (Jug 2).'), nl.
+
+% Action: Pour from Jug 1 to Jug 2
+pour_jug1_to_jug2((X,Y), (NewX,NewY)) :-
+    X > 0,
+    max_jug2(Max2),
+    Space is Max2 - Y,
+    Space > 0,
+    Transfer is min(X, Space),
+    NewX is X - Transfer,
+    NewY is Y + Transfer,
+    write('Pour water from Jug 1 to Jug 2.'), nl.
+
+% Action: Pour from Jug 2 to Jug 1
+pour_jug2_to_jug1((X,Y), (NewX,NewY)) :-
+    Y > 0,
+    max_jug1(Max1),
+    Space is Max1 - X,
+    Space > 0,
+    Transfer is min(Y, Space),
+    NewY is Y - Transfer,
+    NewX is X + Transfer,
+    write('Pour water from Jug 2 to Jug 1.'), nl.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Represent a state as [CL, ML, B, CR, MR]
+start([3,3,left,0,0]).
+goal([0,0,right,3,3]).
+
+% Legal state: ensures valid state transitions.
+legal(CL, ML, CR, MR) :-
+    ML >= 0, CL >= 0, MR >= 0, CR >= 0,
+    (ML >= CL ; ML = 0),
+    (MR >= CR ; MR = 0).
+
+% Possible moves:
+
+% Two missionaries cross left to right.
+move([CL, ML, left, CR, MR], [CL, ML2, right, CR, MR2]) :-
+    MR2 is MR + 2,
+    ML2 is ML - 2,
+    legal(CL, ML2, CR, MR2).
+
+% Two cannibals cross left to right.
+move([CL, ML, left, CR, MR], [CL2, ML, right, CR2, MR]) :-
+    CR2 is CR + 2,
+    CL2 is CL - 2,
+    legal(CL2, ML, CR2, MR).
+
+% One missionary and one cannibal cross left to right.
+move([CL, ML, left, CR, MR], [CL2, ML2, right, CR2, MR2]) :-
+    CR2 is CR + 1,
+    CL2 is CL - 1,
+    MR2 is MR + 1,
+    ML2 is ML - 1,
+    legal(CL2, ML2, CR2, MR2).
+
+% One missionary crosses left to right.
+move([CL, ML, left, CR, MR], [CL, ML2, right, CR, MR2]) :-
+    MR2 is MR + 1,
+    ML2 is ML - 1,
+    legal(CL, ML2, CR, MR2).
+
+% One cannibal crosses left to right.
+move([CL, ML, left, CR, MR], [CL2, ML, right, CR2, MR]) :-
+    CR2 is CR + 1,
+    CL2 is CL - 1,
+    legal(CL2, ML, CR2, MR).
+
+% Two missionaries cross right to left.
+move([CL, ML, right, CR, MR], [CL, ML2, left, CR, MR2]) :-
+    MR2 is MR - 2,
+    ML2 is ML + 2,
+    legal(CL, ML2, CR, MR2).
+
+% Two cannibals cross right to left.
+move([CL, ML, right, CR, MR], [CL2, ML, left, CR2, MR]) :-
+    CR2 is CR - 2,
+    CL2 is CL + 2,
+    legal(CL2, ML, CR2, MR).
+
+% One missionary and one cannibal cross right to left.
+move([CL, ML, right, CR, MR], [CL2, ML2, left, CR2, MR2]) :-
+    CR2 is CR - 1,
+    CL2 is CL + 1,
+    MR2 is MR - 1,
+    ML2 is ML + 1,
+    legal(CL2, ML2, CR2, MR2).
+
+% One missionary crosses right to left.
+move([CL, ML, right, CR, MR], [CL, ML2, left, CR, MR2]) :-
+    MR2 is MR - 1,
+    ML2 is ML + 1,
+    legal(CL, ML2, CR, MR2).
+
+% One cannibal crosses right to left.
+move([CL, ML, right, CR, MR], [CL2, ML, left, CR2, MR]) :-
+    CR2 is CR - 1,
+    CL2 is CL + 1,
+    legal(CL2, ML, CR2, MR).
+
+% Recursive path finder
+path(State, State, _, MovesList) :-
+    output(MovesList).
+
+path(CurrentState, GoalState, Explored, MovesList) :-
+    move(CurrentState, NextState),
+    \+ member(NextState, Explored),
+    path(NextState, GoalState,
+         [NextState | Explored],
+         [[CurrentState, NextState] | MovesList]).
+
+% Output the solution moves in correct order
+output(MovesList) :-
+    reverse(MovesList, OrderedMoves),
+    print_moves(OrderedMoves).
+
+print_moves([]).
+print_moves([[From, To] | Rest]) :-
+    write(From), write(' -> '), write(To), nl,
+    print_moves(Rest).
+
+% Entry point to find the solution
+find :-
+    start(Start),
+    goal(Goal),
+    path(Start, Goal, [Start], []).
+
+
+
+
+
+
+
+
+
+% Entry point: solve the water jug problem with jug capacities A, B and goal C
+water_jug_problem(A, B, C) :-
+    solve(0, 0, A, B, C, [(0,0)]).
+
+% Base case: If either jug contains the goal amount C, print the solution path
+solve(X, Y, _, _, C, History) :-
+    (X =:= C ; Y =:= C),
+    reverse(History, SolutionPath),
+    write('Solution found:'), nl,
+    print_solution(SolutionPath),
+    !.
+
+% Recursive case: try all possible actions from current state
+solve(X, Y, A, B, C, History) :-
+    % Action 1: Fill Jug 1
+    X < A,
+    NewX = A,
+    NewY = Y,
+    \+ member((NewX, NewY), History),
+    solve(NewX, NewY, A, B, C, [(NewX, NewY)|History]).
+
+solve(X, Y, A, B, C, History) :-
+    % Action 2: Fill Jug 2
+    Y < B,
+    NewX = X,
+    NewY = B,
+    \+ member((NewX, NewY), History),
+    solve(NewX, NewY, A, B, C, [(NewX, NewY)|History]).
+
+solve(X, Y, A, B, C, History) :-
+    % Action 3: Empty Jug 1
+    X > 0,
+    NewX = 0,
+    NewY = Y,
+    \+ member((NewX, NewY), History),
+    solve(NewX, NewY, A, B, C, [(NewX, NewY)|History]).
+
+solve(X, Y, A, B, C, History) :-
+    % Action 4: Empty Jug 2
+    Y > 0,
+    NewX = X,
+    NewY = 0,
+    \+ member((NewX, NewY), History),
+    solve(NewX, NewY, A, B, C, [(NewX, NewY)|History]).
+
+solve(X, Y, A, B, C, History) :-
+    % Action 5: Pour water from Jug 1 to Jug 2
+    X > 0,
+    Y < B,
+    Transfer is min(X, B - Y),
+    NewX is X - Transfer,
+    NewY is Y + Transfer,
+    \+ member((NewX, NewY), History),
+    solve(NewX, NewY, A, B, C, [(NewX, NewY)|History]).
+
+solve(X, Y, A, B, C, History) :-
+    % Action 6: Pour water from Jug 2 to Jug 1
+    Y > 0,
+    X < A,
+    Transfer is min(Y, A - X),
+    NewX is X + Transfer,
+    NewY is Y - Transfer,
+    \+ member((NewX, NewY), History),
+    solve(NewX, NewY, A, B, C, [(NewX, NewY)|History]).
+
+% Helper predicate to print solution states nicely
+print_solution([]).
+print_solution([(X,Y)|T]) :-
+    format('Jug1: ~w gallons, Jug2: ~w gallons~n', [X, Y]),
+    print_solution(T).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% Graph edges
+s(a, b).
+s(a, c).
+s(b, d).
+s(b, e).
+s(c, f).
+s(c, g).
+s(d, h).
+s(e, i).
+s(e, j).
+s(f, k).
+s(g, l).
+s(i, m).
+s(i, n).
+
+% Goal nodes
+goal(k).
+goal(m).
+
+% Breadth-First Search
+solve_bfs(Start, Solution) :-
+    bfs([[Start]], Solution).
+
+bfs([[Node | Path] | _], [Node | Path]) :-
+    goal(Node).  % If the first path in queue reaches a goal, return it
+
+bfs([[Node | Path] | Paths], Solution) :-
+    findall([Next, Node | Path],
+            (s(Node, Next), \+ member(Next, [Node | Path])),
+            NewPaths),  % Expand node and generate new paths
+    append(Paths, NewPaths, UpdatedPaths),  % Add new paths to the end of the queue
+    bfs(UpdatedPaths, Solution).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% --- Goal state ---
+goal([1, 2, 3, 4, 5, 6, 7, 8, 0]).
+
+% --- Swap two elements in a list by position ---
+swap(List, I, J, Result) :-
+    nth0(I, List, ElemI),
+    nth0(J, List, ElemJ),
+    set_elem(List, I, ElemJ, Temp),
+    set_elem(Temp, J, ElemI, Result).
+
+% --- Replace element at position N in List with Elem → NewList ---
+set_elem(List, N, Elem, NewList) :-
+    nth0(N, List, _, Rest),
+    nth0(N, NewList, Elem, Rest).
+
+% --- Legal moves of 0 (blank tile) ---
+move(State, Next) :-
+    nth0(Blank, State, 0),
+    (
+        (Blank > 2, Up is Blank - 3, swap(State, Blank, Up, Next));    % Up
+        (Blank < 6, Down is Blank + 3, swap(State, Blank, Down, Next)); % Down
+        (Blank mod 3 =\= 0, Left is Blank - 1, swap(State, Blank, Left, Next)); % Left
+        (Blank mod 3 =\= 2, Right is Blank + 1, swap(State, Blank, Right, Next)) % Right
+    ).
+
+% --- BFS Implementation ---
+solve_bfs(Start, Solution) :-
+    bfs([[Start]], Solution).
+
+bfs([[State | Path] | _], [State | Path]) :-
+    goal(State).  % If the first path in queue reaches a goal, return it
+
+bfs([[State | Path] | Paths], Solution) :-
+    findall([Next, State | Path],
+            (move(State, Next), \+ member(Next, [State | Path])),
+            NewPaths),  % Generate new paths
+    append(Paths, NewPaths, UpdatedPaths),  % Add new paths to the queue
+    bfs(UpdatedPaths, Solution).
+
+% --- Start the solver ---
+solve(Start) :-
+    solve_bfs(Start, Solution),
+    reverse(Solution, Steps),
+    print_steps(Steps).
+
+% --- Print each step ---
+print_steps([]).
+print_steps([H | T]) :-
+    print_board(H), nl,
+    print_steps(T).
+
+% --- Display the board in 3x3 grid format ---
+print_board([A, B, C, D, E, F, G, H, I]) :-
+    format('~w ~w ~w~n~w ~w ~w~n~w ~w ~w~n', [A, B, C, D, E, F, G, H, I]).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
