@@ -1,0 +1,486 @@
+Caesar Cipher Java Program
+
+
+
+import java.util.Scanner;
+
+public class CaesarCipherEasy {
+
+    // Encrypt function
+    public static String encrypt(String text, int key) {
+        String result = "";
+        for (int i = 0; i < text.length(); i++) {
+            char ch = text.charAt(i);
+
+            if (Character.isLetter(ch)) {
+                char base = Character.isUpperCase(ch) ? 'A' : 'a';
+                ch = (char) ((ch - base + key) % 26 + base);
+            }
+
+            result += ch;
+        }
+        return result;
+    }
+
+    // Decrypt function
+    public static String decrypt(String text, int key) {
+        return encrypt(text, 26 - key); // reverse shift
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter message: ");
+        String msg = sc.nextLine();
+
+        System.out.print("Enter key (0-25): ");
+        int key = sc.nextInt();
+
+        String encrypted = encrypt(msg, key);
+        String decrypted = decrypt(encrypted, key);
+
+        System.out.println("\nEncrypted: " + encrypted);
+        System.out.println("Decrypted: " + decrypted);
+    }
+}
+
+
+
+DES Program in Java
+
+
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.util.Base64;
+import java.util.Scanner;
+
+public class SimpleDESUserInput {
+
+    public static void main(String[] args) throws Exception {
+
+        Scanner sc = new Scanner(System.in);
+
+        // User input
+        System.out.print("Enter message to encrypt: ");
+        String message = sc.nextLine();
+
+        // Generate DES Key
+        KeyGenerator keyGen = KeyGenerator.getInstance("DES");
+        SecretKey key = keyGen.generateKey();
+
+        // Encrypt
+        Cipher cipher = Cipher.getInstance("DES");
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        byte[] encrypted = cipher.doFinal(message.getBytes());
+        String encText = Base64.getEncoder().encodeToString(encrypted);
+
+        // Decrypt
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        byte[] decrypted = cipher.doFinal(encrypted);
+        String decText = new String(decrypted);
+
+        System.out.println("\nData Encryption Standard (DES)");
+        System.out.println("---------------------------------");
+        System.out.println("Original Message : " + message);
+        System.out.println("Encrypted Text   : " + encText);
+        System.out.println("Decrypted Text   : " + decText);
+    }
+}
+
+
+
+AES
+
+
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import java.util.Base64;
+import java.util.Scanner;
+
+public class SimpleAESUserInput {
+
+    public static void main(String[] args) throws Exception {
+
+        Scanner sc = new Scanner(System.in);
+
+        // User input
+        System.out.print("Enter message to encrypt: ");
+        String message = sc.nextLine();
+
+        // Generate AES Key (128-bit)
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        keyGen.init(128);
+        SecretKey key = keyGen.generateKey();
+
+        // Encrypt
+        Cipher cipher = Cipher.getInstance("AES");
+        cipher.init(Cipher.ENCRYPT_MODE, key);
+        byte[] encrypted = cipher.doFinal(message.getBytes());
+        String encText = Base64.getEncoder().encodeToString(encrypted);
+
+        // Decrypt
+        cipher.init(Cipher.DECRYPT_MODE, key);
+        byte[] decrypted = cipher.doFinal(encrypted);
+        String decText = new String(decrypted);
+
+        System.out.println("\nAdvanced Encryption Standard (AES)");
+        System.out.println("---------------------------------------");
+        System.out.println("Original Message : " + message);
+        System.out.println("Encrypted Text   : " + encText);
+        System.out.println("Decrypted Text   : " + decText);
+    }
+}
+
+
+
+RSA
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple RSA Algorithm</title>
+</head>
+<body>
+<center>
+    <h2>RSA Algorithm using HTML & JavaScript</h2>
+    <hr>
+
+    <label>Enter First Prime Number (p):</label>
+    <input type="number" id="p" value="11"><br><br>
+
+    <label>Enter Second Prime Number (q):</label>
+    <input type="number" id="q" value="13"><br><br>
+
+    <label>Enter Message (Number):</label>
+    <input type="number" id="msg" value="9"><br><br>
+
+    <button onclick="rsa()">Apply RSA</button>
+
+    <h3>Output</h3>
+    <p id="nval"></p>
+    <p id="eval"></p>
+    <p id="dval"></p>
+    <p id="enc"></p>
+    <p id="dec"></p>
+</center>
+
+<script>
+function rsa() {
+
+    let p = parseInt(document.getElementById("p").value);
+    let q = parseInt(document.getElementById("q").value);
+    let msg = parseInt(document.getElementById("msg").value);
+
+    // n = p * q
+    let n = p * q;
+
+    // φ(n)
+    let phi = (p - 1) * (q - 1);
+
+    // Find e (smallest number coprime with phi)
+    let e = 2;
+    while (e < phi) {
+        if (gcd(e, phi) === 1) break;
+        e++;
+    }
+
+    // Find d (multiplicative inverse)
+    let d = 0;
+    let k = 1;
+    while (true) {
+        let temp = (1 + k * phi);
+        if (temp % e === 0) {
+            d = temp / e;
+            break;
+        }
+        k++;
+    }
+
+    // Encryption: (msg^e) % n
+    let encrypted = powmod(msg, e, n);
+
+    // Decryption: (enc^d) % n
+    let decrypted = powmod(encrypted, d, n);
+
+    // Display output
+    document.getElementById("nval").innerHTML = "Public Key (n): " + n;
+    document.getElementById("eval").innerHTML = "Public Exponent (e): " + e;
+    document.getElementById("dval").innerHTML = "Private Key (d): " + d;
+    document.getElementById("enc").innerHTML = "Encrypted Message: " + encrypted;
+    document.getElementById("dec").innerHTML = "Decrypted Message: " + decrypted;
+}
+
+// Helper: GCD
+function gcd(a, b) {
+    return b === 0 ? a : gcd(b, a % b);
+}
+
+// Fast power mod function
+function powmod(base, exp, mod) {
+    let result = 1;
+    for (let i = 0; i < exp; i++) {
+        result = (result * base) % mod;
+    }
+    return result;
+}
+</script>
+</body>
+</html>
+
+
+
+Digital Signature
+
+
+
+import java.security.*;
+import java.util.*;
+
+public class CreatingDigitalSignature {
+    public static void main(String args[]) throws Exception {
+
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter some text:");
+        String msg = sc.nextLine();
+
+        // Generate key pair
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("DSA");
+        keyGen.initialize(2048);
+        KeyPair pair = keyGen.generateKeyPair();
+        PrivateKey privKey = pair.getPrivate();
+
+        // Create signature object
+        Signature sign = Signature.getInstance("SHA256withDSA");
+
+        // Sign the message
+        sign.initSign(privKey);
+        sign.update(msg.getBytes());
+        byte[] signature = sign.sign();
+
+        System.out.println("Digital Signature for the given text:");
+        System.out.println(new String(signature, "UTF8"));
+    }
+}
+
+
+
+
+Rail Fence Cipher
+
+
+public class RailFenceCipher {
+
+    // Encrypt
+    static String encode(String msg, int depth) {
+        int r = depth;
+        int l = msg.length();
+        int c = (int) Math.ceil((double) l / depth);
+        int k = 0;
+
+        char[][] mat = new char[r][c];
+        String enc = "";
+
+        // Fill matrix column-wise
+        for (int i = 0; i < c; i++) {
+            for (int j = 0; j < r; j++) {
+                if (k < l)
+                    mat[j][i] = msg.charAt(k++);
+                else
+                    mat[j][i] = 'X';   // padding
+            }
+        }
+
+        // Read row-wise (encrypted text)
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) {
+                enc += mat[i][j];
+            }
+        }
+        return enc;
+    }
+
+    // Decrypt
+    static String decode(String encmsg, int depth) {
+        int r = depth;
+        int l = encmsg.length();
+        int c = l / depth;
+        int k = 0;
+
+        char[][] mat = new char[r][c];
+        String dec = "";
+
+        // Fill matrix row-wise
+        for (int i = 0; i < r; i++) {
+            for (int j = 0; j < c; j++) {
+                mat[i][j] = encmsg.charAt(k++);
+            }
+        }
+
+        // Read column-wise (decrypted text)
+        for (int i = 0; i < c; i++) {
+            for (int j = 0; j < r; j++) {
+                dec += mat[j][i];
+            }
+        }
+        return dec;
+    }
+
+    public static void main(String[] args) {
+
+        String msg = "Anna University, Chennai";
+        int depth = 2;
+
+        String enc = encode(msg, depth);
+        String dec = decode(enc, depth);
+
+        System.out.println("Simulating Rail Fence Cipher");
+        System.out.println("----------------------------");
+        System.out.println("Input Message     : " + msg);
+        System.out.println("Encrypted Message : " + enc);
+        System.out.println("Decrypted Message : " + dec);
+    }
+}
+
+
+
+
+Vigenere Cipher
+
+
+public class VigenereCipherSimple {
+
+    // Encrypt function
+    static String encrypt(String text, String key) {
+        text = text.toUpperCase();
+        key = key.toUpperCase();
+        String result = "";
+
+        for (int i = 0, j = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (c < 'A' || c > 'Z') {   // Skip non-letters
+                continue;
+            }
+
+            result += (char) ((c + key.charAt(j) - 2 * 'A') % 26 + 'A');
+            j = (j + 1) % key.length();
+        }
+        return result;
+    }
+
+    // Decrypt function
+    static String decrypt(String text, String key) {
+        text = text.toUpperCase();
+        key = key.toUpperCase();
+        String result = "";
+
+        for (int i = 0, j = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (c < 'A' || c > 'Z') {
+                continue;
+            }
+
+            result += (char) ((c - key.charAt(j) + 26) % 26 + 'A');
+            j = (j + 1) % key.length();
+        }
+        return result;
+    }
+
+    // Main function
+    public static void main(String[] args) {
+
+        String key = "VIGENERE";
+        String message = "SECRETMESSAGE";
+
+        System.out.println("Vigenere Cipher Simulation");
+        System.out.println("---------------------------");
+        System.out.println("Input Message   : " + message);
+
+        String encrypted = encrypt(message, key);
+        System.out.println("Encrypted Text  : " + encrypted);
+
+        String decrypted = decrypt(encrypted, key);
+        System.out.println("Decrypted Text  : " + decrypted);
+    }
+}
+
+
+
+hill cipher
+
+
+import java.util.Scanner;
+
+public class HillCipher {
+
+    // Multiply 2×2 matrix with 2×1 vector
+    static int[] multiply(int[][] key, int[] msg) {
+        int[] result = new int[2];
+        result[0] = (key[0][0] * msg[0] + key[0][1] * msg[1]) % 26;
+        result[1] = (key[1][0] * msg[0] + key[1][1] * msg[1]) % 26;
+        return result;
+    }
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter 2-letter message: ");
+        String msg = sc.nextLine().toUpperCase();
+
+        int[] msgVector = {
+            msg.charAt(0) - 'A',
+            msg.charAt(1) - 'A'
+        };
+
+        // Encryption Key Matrix
+        int[][] key = {
+            {3, 3},
+            {2, 5}
+        };
+
+        // Calculate Determinant = (ad - bc)
+        int det = (key[0][0] * key[1][1] - key[0][1] * key[1][0]) % 26;
+        if (det < 0) det += 26;
+
+        // Find modular inverse of determinant
+        int detInv = 0;
+        for (int i = 0; i < 26; i++) {
+            if ((det * i) % 26 == 1) {
+                detInv = i;
+                break;
+            }
+        }
+
+        // Inverse Key Matrix for Decryption
+        int[][] invKey = {
+            {(key[1][1] * detInv) % 26, (-key[0][1] * detInv) % 26},
+            {(-key[1][0] * detInv) % 26, (key[0][0] * detInv) % 26}
+        };
+
+        // Fix negative values
+        for (int i = 0; i < 2; i++)
+            for (int j = 0; j < 2; j++)
+                if (invKey[i][j] < 0)
+                    invKey[i][j] += 26;
+
+        // Encrypt
+        int[] enc = multiply(key, msgVector);
+        String encrypted = "" + (char)(enc[0] + 'A') + (char)(enc[1] + 'A');
+
+        // Decrypt
+        int[] dec = multiply(invKey, enc);
+        String decrypted = "" + (char)(dec[0] + 'A') + (char)(dec[1] + 'A');
+
+        System.out.println("\nHill Cipher");
+        System.out.println("----------------------");
+        System.out.println("Original Text  : " + msg);
+        System.out.println("Encrypted Text : " + encrypted);
+        System.out.println("Decrypted Text : " + decrypted);
+    }
+}
