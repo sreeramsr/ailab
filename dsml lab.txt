@@ -1,0 +1,274 @@
+
+data <- mtcars
+boxplot(mpg ~ cyl,
+        data = data,
+        main = "Box Plot - Miles per Gallon vs Number of Cylinders",
+        xlab = "Number of Cylinders",
+        ylab = "Miles per Gallon",
+        col = "lightblue",  
+        border = "darkblue")
+plot(data$wt, data$mpg,
+     main = "Scatter Plot - Weight vs Miles per Gallon",
+     xlab = "Weight (1000 lbs)",
+     ylab = "Miles per Gallon",
+     col = "darkgreen",
+     pch = 19)
+abline(lm(mpg ~ wt, data = data), col = "red", lwd = 2)
+
+
+x <- rnorm(100)
+boxplot(x, outcoll = "red")
+
+# Sample data for barplot and pie chart
+x <- c(9, 18, 27, 36, 45, 54, 63)
+
+# Assign names to categories
+names(x) <- c("AI", "ML", "DL", "IoT", "Cloud", "Blockchain", "CyberSec")
+
+# -------------------------
+# 1. Bar Plot
+# -------------------------
+barplot(
+  x,
+  xlab = "Audience",
+  ylab = "Count",
+  col = "white",
+  #col.axis = "darkgreen",
+  #col.lab = "darkgreen",
+  main = "Bar Plot - Audience Count"
+)
+
+# -------------------------
+# 2. Pie Chart
+# -------------------------
+pie(
+  x,
+  labels = names(x),
+  col = "white",
+  main = "Articles on Medium",
+  #col.main = "darkgreen"
+)
+
+# -------------------------
+# 3. Histogram
+# -------------------------
+x2 <- c(15, 25, 35, 45, 55, 65, 75, 20,
+        30, 40, 50, 60, 70, 80, 90, 100, 110)
+
+hist(
+  x2,
+  main = "Histogram",
+  xlab = "Values",
+  col = "white",
+  col.lab = "darkgreen",
+  col.main = "darkgreen"
+)
+
+
+7
+
+install.packages("corrplot")
+
+# Load library
+library(corrplot)
+
+# Load iris dataset
+data(iris)
+
+# a. Correlation matrix
+cor_matrix <- cor(iris[, 1:4])
+print("Correlation Matrix:")
+print(cor_matrix)
+
+# b. Correlation Plot
+corrplot(cor_matrix,
+         method = "color",
+         addCoef.col = "black",
+         tl.col = "black",
+         tl.srt = 45,
+         main = "Correlation Plot - Iris Data")
+
+
+# Load iris dataset
+data(iris)
+
+# View first few rows
+head(iris)
+
+# Perform ANOVA
+anova_result <- aov(Petal.Length ~ Species, data = iris)
+
+# Summary of ANOVA
+summary(anova_result)
+
+
+
+
+
+8
+
+
+library(readr)
+library(dplyr)
+
+# Load dataset from web
+url <- "https://stats.idre.ucla.edu/stat/data/binary.csv"
+admission_data <- read_csv(url)
+
+# Perform Logistic Regression (Correct formula)
+model <- glm(admit ~ gre + gpa + rank,
+             data = admission_data,
+             family = binomial)
+
+# Check the model fit
+summary(model)
+
+# Predict the probability of admission for new data
+new_data <- data.frame(gre = 600, gpa = 3.5, rank = 3)
+predicted_probability <- predict(model, newdata = new_data, type = "response")
+
+print(paste("Predicted Probability of Admission:", predicted_probability))
+
+
+9
+
+library(dplyr)
+
+model_gre_gpa <- lm(admit ~ gre + gpa, data = admission_data)
+summary(model_gre_gpa)
+
+model_gre <- lm(admit ~ gre, data = admission_data)
+summary(model_gre)
+
+model_gpa <- lm(admit ~ gpa, data = admission_data)
+summary(model_gpa)
+
+
+10
+
+
+library(dplyr)
+library(ggplot2)
+
+# Create dataset
+df <- data.frame(
+  state.abb = state.abb,
+  population = runif(length(state.abb), 1000000, 50000000)
+)
+
+# Convert state abbreviation to factor (required for regression)
+df$state.abb <- as.factor(df$state.abb)
+
+# Regression model
+model <- lm(population ~ state.abb, data = df)
+
+# Summary
+summary(model)
+
+# Prediction
+new_data <- data.frame(state.abb = factor(c("CA", "NY"), levels = levels(df$state.abb)))
+predictions <- predict(model, newdata = new_data)
+print(predictions)
+
+# Plot
+ggplot(df, aes(x = state.abb, y = population)) +
+  geom_point() +
+  geom_smooth(method = "lm")
+
+
+
+5
+
+import pandas as pd
+import requests
+
+with open("sample.txt", "r") as f:
+    txt_data = f.read()
+print("TXT File Data:")
+print(txt_data)
+
+csv_data = pd.read_csv("data.csv")
+print("\nCSV File Data:")
+print(csv_data)
+url = "https://www.github.com/sreeramsr/devopspractice/hello.txt"
+response = requests.get(url)
+web_data = response.text
+print("\nData from Web URL:")
+print(web_data)
+
+output_path = "C:/Users/YourName/Desktop/output.txt"
+
+with open(output_path, "w") as f:
+    f.write("TXT File Data:\n")
+    f.write(txt_data + "\n\n")
+
+    f.write("CSV File Data:\n")
+    f.write(csv_data.to_string() + "\n\n")
+
+    f.write("Web URL Data:\n")
+    f.write(web_data)
+
+print("\nOutput written to:", output_path)
+
+data = pd.read_excel("students.xlsx")
+
+# Display the data
+print("Excel Sheet Data:")
+print(data)
+books = pd.read_xml("dataxml.xml")
+
+# Display the DataFrame
+print(books)
+
+3
+
+import pandas as pd
+
+# Load datasets (CSV files)
+mtcars = pd.read_csv("mtcars.csv")
+cars = pd.read_csv("cars.csv")
+
+print("------ mtcars Summary ------")
+print(mtcars.describe())    # summary()
+
+print("\nmtcars Structure (str)")
+print(mtcars.info())        # str()
+
+print("\nmtcars Quartiles")
+print(mtcars.quantile([0.25, 0.5, 0.75]))   # quartile()
+
+print("\n------ cars Summary ------")
+print(cars.describe())      # summary()
+
+print("\ncars Structure (str)")
+print(cars.info())          # str()
+
+print("\ncars Quartiles")
+print(cars.quantile([0.25, 0.5, 0.75]))     # quartiles
+
+
+subset
+
+import pandas as pd
+
+# Load iris dataset
+iris = pd.read_csv("iris.csv")
+
+# ---------- SUBSET ----------
+print("Subset: Rows where Species == 'setosa'")
+subset_setosa = iris[iris["Species"] == "setosa"]
+print(subset_setosa.head())
+
+print("\nSubset: Sepal.Length > 5")
+subset_length = iris[iris["SepalLength"] > 5]
+print(subset_length.head())
+
+# ---------- AGGREGATE ----------
+print("\nAggregate: Mean of each Species")
+agg_mean = iris.groupby("Species").mean()
+print(agg_mean)
+
+print("\nAggregate: Min, Max for each Species")
+agg_min_max = iris.groupby("Species").agg(["min", "max"])
+print(agg_min_max)
+
